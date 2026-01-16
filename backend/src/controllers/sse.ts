@@ -202,6 +202,7 @@ export const userSse = async (req: FastifyRequest<{ Querystring: { token: string
         reply.raw.setHeader('Cache-Control', 'no-cache');
         reply.raw.setHeader('Connection', 'keep-alive');
         reply.raw.setHeader('Access-Control-Allow-Origin', '*');
+        reply.raw.setHeader('X-Accel-Buffering', 'no');
 
         userConnections.set(userId, reply);
         console.log(`User connected: ${userId}`);
@@ -267,6 +268,7 @@ export const agentSse = async (req: FastifyRequest, reply: FastifyReply) => {
         reply.raw.setHeader('Content-Type', 'text/event-stream');
         reply.raw.setHeader('Cache-Control', 'no-cache');
         reply.raw.setHeader('Access-Control-Allow-Origin', '*');
+        reply.raw.setHeader('X-Accel-Buffering', 'no');
 
         // Manage multi-connection
         if (!agentConnections.has(agentId)) {
