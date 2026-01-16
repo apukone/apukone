@@ -113,3 +113,7 @@ h6 {
 .mat-drawer-inner-container {
     overflow: hidden !important;
 }
+
+mat-drawer-content {
+    overflow-x: auto !important;
+}
