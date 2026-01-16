@@ -1,0 +1,46 @@
+<div class="profile-container">
+    <div class="profile-card">
+        <h3>{{ 'profile.details' | translate }}</h3>
+        <form [formGroup]="form">
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'profile.username' | translate }}</mat-label>
+                <input matInput placeholder="{{ 'profile.username' | translate }}" id="username"
+                    formControlName="username">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'profile.email' | translate }}</mat-label>
+                <input matInput placeholder="{{ 'profile.email' | translate }}" id="email" formControlName="email">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'profile.role' | translate }}</mat-label>
+                <input matInput placeholder="{{ 'profile.role' | translate }}" id="role" formControlName="role">
+            </mat-form-field>
+        </form>
+    </div>
+
+    <div class="profile-card">
+        <h3>{{ 'profile.change_password' | translate }}</h3>
+        <form [formGroup]="passwordForm" (ngSubmit)="updatePassword()">
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'profile.new_password' | translate }}</mat-label>
+                <input matInput type="password" placeholder="{{ 'profile.new_password' | translate }}"
+                    formControlName="password">
+            </mat-form-field>
+            <br>
+            <button mat-raised-button color="primary" type="submit" [disabled]="passwordForm.invalid">{{
+                'profile.update_password' | translate }}</button>
+        </form>
+    </div>
+
+    <div class="status-messages">
+        <p *ngIf="message" class="success-message">{{message}}</p>
+        <p *ngIf="error" class="error-message">{{error}}</p>
+    </div>
+
+    <div class="danger-zone">
+        <button mat-stroked-button color="warn" (click)="deleteProfile()">{{ 'profile.delete_profile' | translate
+            }}</button>
+    </div>
+</div>

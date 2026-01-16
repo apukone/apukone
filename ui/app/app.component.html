@@ -1,0 +1,28 @@
+<nav-component (toggleSidenav)="onEventReceived($event)"></nav-component>
+<div id="content">
+    <div *ngIf="dataService.isLoggedIn; else loggedOut" style="height: 100%">
+        <mat-drawer-container class="sidenav-container">
+            <mat-drawer mode="over" #drawer class="sidenav-drawer">
+                <div id="drawer-top">
+                    <button mat-button routerLink="/chat" (click)="onEventReceived(false)">New chat</button>
+                </div>
+                <div *ngFor="let chatObject of dataService.chats" class="chat-item">
+                    <div class="chat" [routerLink]="['/chat', chatObject.id]" (click)="onEventReceived(false)">
+                        <p>{{chatObject.title}}</p>
+                    </div>
+                    <button mat-icon-button (click)="deleteChat(chatObject.id)">
+                        <mat-icon color="red">delete</mat-icon>
+                    </button>
+                </div>
+            </mat-drawer>
+            <mat-drawer-content #drawerContent>
+                <router-outlet></router-outlet>
+            </mat-drawer-content>
+        </mat-drawer-container>
+    </div>
+    <ng-template #loggedOut>
+        <div id="loggedOut">
+            <router-outlet></router-outlet>
+        </div>
+    </ng-template>
+</div>

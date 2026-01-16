@@ -1,0 +1,29 @@
+<div id="chat-container">
+    <div id="chat-messages">
+        <div *ngFor="let message of messages; trackBy: trackByFn" class="msg-container"
+            [ngClass]="message.content | rolePipe">
+            <div class="msg">
+                <markdown>{{message.content | messagePipe}}</markdown>
+            </div>
+            <div *ngIf="(message.content | rolePipe) === 'user' && message.status === 'processing'"
+                class="message-status">
+                <span class="dot"></span> Processing
+            </div>
+            <div *ngIf="(message.content | rolePipe) !== 'user'" class="agent-name">
+                {{ getAgentName(message.agent_id || message.agentId) }}
+            </div>
+        </div>
+    </div>
+    <div id="new-message">
+        <form (ngSubmit)="send()" [formGroup]="form">
+            <mat-form-field appearance="outline">
+                <textarea matInput placeholder="{{ 'new_chat.message_placeholder' | translate }}"
+                    formControlName="message" (keydown.enter)="send($event)" rows="1"></textarea>
+            </mat-form-field>
+            <button mat-icon-button type="submit"
+                [disabled]="form.invalid || form.disabled || form.get('message')?.value.length == 0 || !(dataService.selectedAgent | async)">
+                <mat-icon>send</mat-icon>
+            </button>
+        </form>
+    </div>
+</div>

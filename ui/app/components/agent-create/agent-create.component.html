@@ -1,0 +1,41 @@
+<div id="page-container">
+    <div style="margin-bottom: 2rem;">
+        <a routerLink="/agents"
+            style="text-decoration: none; color: var(--color-primary); display: inline-flex; align-items: center; gap: 4px; margin-bottom: 1rem;">
+            <mat-icon style="font-size: 18px; margin-bottom: 2px;">arrow_back</mat-icon> {{ 'agent_manage.back' |
+            translate }}
+        </a>
+        <div id="page-header">
+            <h2>{{ 'agent_create.title' | translate }}</h2>
+            <p>{{ 'agent_create.subtitle' | translate }}</p>
+        </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="createAgent()" class="create-form card-like">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'agent_create.field_title' | translate }}</mat-label>
+            <input matInput placeholder="e.g. Weather Bot" id="title" formControlName="title">
+            <mat-error *ngIf="form.get('title')?.hasError('required')">{{ 'agent_create.error_required' | translate
+                }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ 'agent_create.field_desc' | translate }}</mat-label>
+            <textarea matInput placeholder="{{ 'agent_create.field_desc_placeholder' | translate }}"
+                formControlName="description" rows="4"></textarea>
+            <mat-error *ngIf="form.get('description')?.hasError('required')">{{ 'agent_create.error_required' |
+                translate }}</mat-error>
+        </mat-form-field>
+
+        <div class="form-actions">
+            <button type="button" mat-stroked-button routerLink="/agents">{{ 'agent_create.cancel' | translate
+                }}</button>
+            <button mat-flat-button color="primary" type="submit"
+                [disabled]="form.invalid || (loadingService.loading$ | async)">
+                {{ 'agent_create.create' | translate }}
+            </button>
+        </div>
+
+        <p *ngIf="error" class="error-message" style="margin-top: 1rem;">{{error}}</p>
+    </form>
+</div>

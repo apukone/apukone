@@ -1,0 +1,77 @@
+<div class="admin-container">
+    <h2>{{ 'admin.title' | translate }}</h2>
+
+    <div class="admin-grid">
+        <div class="user-list card">
+            <h3>{{ 'admin.all_users' | translate }}</h3>
+            <table mat-table [dataSource]="users" class="mat-elevation-z0">
+                <ng-container matColumnDef="username">
+                    <th mat-header-cell *matHeaderCellDef [style.width.%]="25">{{ 'profile.username' | translate }}</th>
+                    <td mat-cell *matCellDef="let user">{{user.username}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="email">
+                    <th mat-header-cell *matHeaderCellDef [style.width.%]="35">{{ 'profile.email' | translate }}</th>
+                    <td mat-cell *matCellDef="let user">{{user.email}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="role">
+                    <th mat-header-cell *matHeaderCellDef [style.width.%]="20">{{ 'profile.role' | translate }}</th>
+                    <td mat-cell *matCellDef="let user">{{user.role}}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef [style.width.%]="20">{{ 'admin.actions' | translate }}</th>
+                    <td mat-cell *matCellDef="let user">
+                        <button mat-icon-button color="warn" (click)="deleteUser(user.id)"
+                            title="{{ 'agents.delete' | translate }}">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+        </div>
+
+        <div class="user-create card">
+            <h3>{{ 'admin.create_user' | translate }}</h3>
+            <form [formGroup]="userForm" (ngSubmit)="createUser()">
+                <mat-form-field appearance="outline">
+                    <mat-label>{{ 'profile.username' | translate }}</mat-label>
+                    <input matInput formControlName="username" placeholder="{{ 'profile.username' | translate }}">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>{{ 'profile.email' | translate }}</mat-label>
+                    <input matInput formControlName="email" placeholder="{{ 'profile.email' | translate }}">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>{{ 'admin.initial_password' | translate }}</mat-label>
+                    <input matInput type="password" formControlName="password"
+                        placeholder="{{ 'admin.initial_password' | translate }}">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>{{ 'profile.role' | translate }}</mat-label>
+                    <mat-select formControlName="role">
+                        <mat-option value="USER">User</mat-option>
+                        <mat-option value="ADMIN">Admin</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <button mat-raised-button color="primary" type="submit" [disabled]="userForm.invalid">
+                    {{ 'admin.create_user' | translate }}
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="status-messages">
+        <p *ngIf="message" class="success-message">{{message}}</p>
+        <p *ngIf="error" class="error-message">{{error}}</p>
+    </div>
+</div>

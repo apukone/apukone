@@ -1,0 +1,98 @@
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
+
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+.vscode
+
+# System files
+.DS_Store
+Thumbs.db
+.rabbitmq_data/
+.history/
+.vscode/
+.env
+
+node_modules
+dist
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+.env.test
+.env.deploy
+.angular
+
+
+# Terraform Files
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+*.log
+
+# Local .terraform directories
+.terraform/
+.terraform.lock.hcl
+
+# IDE or editor-specific files
+.idea/
+.vscode/
+
+# Terraform plan output files (optional, if you generate them)
+plan.tfplan
+
+# Terraform configuration override file (optional)
+override.tf
+override.tf.json
+
+# Terraform variable files (optional, if you use local overrides for variables)
+*.tfvars
+*.tfvars.json
+
+# Terraform sensitive outputs (optional)
+terraform.tfstate.d/
+
+# Other sensitive files
+secrets.txt  # (For example, if you store sensitive data locally)
+env.yaml
+dist.zip
+
+functions/lib
+.gcloudignore
+cloudbuild-temp.yml

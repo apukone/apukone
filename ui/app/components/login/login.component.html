@@ -1,0 +1,21 @@
+<div class="login-container">
+    <div id="basic-head">
+        <h1>{{ 'login.title' | translate }}</h1>
+    </div>
+    <div id="basic-content" class="basic-form">
+        <form [formGroup]="form">
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'login.username' | translate }}</mat-label>
+                <input matInput placeholder="{{ 'login.username' | translate }}" id="username"
+                    formControlName="username">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+                <mat-label>{{ 'login.password' | translate }}</mat-label>
+                <input type="password" matInput placeholder="{{ 'login.password' | translate }}" id="password"
+                    formControlName="password" (keydown.enter)="login()">
+            </mat-form-field>
+        </form>
+        <button [disabled]="form.invalid || form.disabled" mat-flat-button color="primary" (click)="login()">{{
+            'login.login_btn' | translate }}</button>
+    </div>
+</div>

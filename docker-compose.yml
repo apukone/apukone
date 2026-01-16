@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: apukone
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: apukone
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: "postgresql://apukone:password123@postgres:5432/apukone"
+      REDIS_URL: "redis://redis:6379"
+      TOKEN_SECRET: "supersecretchangeinproduction"
+      PORT: 8080
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:

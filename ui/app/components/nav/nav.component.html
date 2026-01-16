@@ -1,0 +1,87 @@
+<div id="nav">
+    <div id="left">
+        <a routerLink="/" class="logo">
+            Apukone
+        </a>
+
+        <div id="nav-links" *ngIf="dataService.isLoggedIn">
+            <button mat-icon-button (click)="sendEvent()" class="menu-btn">
+                <mat-icon>apps</mat-icon>
+            </button>
+            <button mat-button id="agent" [matMenuTriggerFor]="agentMenu">
+                <div style="display: flex; align-items: center;">
+                    <span class="status-indicator" *ngIf="dataService.selectedAgent | async"
+                        [class.online]="(dataService.selectedAgent | async)?.isConnected"></span>
+                    <span>{{ (dataService.selectedAgent | async)?.title || ('nav.select_agent' | translate) }}</span>
+                    <mat-icon style="margin-right: 0px; margin-left: 8px;">keyboard_arrow_down</mat-icon>
+                </div>
+            </button>
+            <mat-menu #agentMenu="matMenu" class="agent-menu">
+                <div class="agent-menu-header"
+                    style="padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">{{
+                    'nav.switch_agent' | translate }}</div>
+
+                <button mat-menu-item *ngFor="let agent of (dataService.agents | async)" (click)="selectAgent(agent)">
+                    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                        <div style="display: flex; align-items: center;">
+                            <span class="status-indicator" [class.online]="agent.isConnected"
+                                style="margin-right: 12px; height: 8px; width: 8px;"></span>
+                            <span>{{agent.title}}</span>
+                        </div>
+                        <mat-icon *ngIf="(dataService.selectedAgent | async)?.id === agent.id"
+                            style="margin-right: 0; font-size: 18px; height: 18px; width: 18px;">check</mat-icon>
+                    </div>
+                </button>
+
+                <div *ngIf="!(dataService.agents | async)?.length"
+                    style="padding: 8px 16px; font-size: 0.9rem; color: var(--text-muted);">
+                    {{ 'nav.no_agents' | translate }}
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <button mat-menu-item routerLink="/agents">
+                    <mat-icon>settings</mat-icon>
+                    <span>{{ 'nav.manage_agents' | translate }}</span>
+                </button>
+                <button mat-menu-item routerLink="/agents/create">
+                    <mat-icon>add</mat-icon>
+                    <span>{{ 'nav.create_agent' | translate }}</span>
+                </button>
+            </mat-menu>
+        </div>
+    </div>
+
+    <div id="right">
+        <div id="other-links">
+            <button mat-button [matMenuTriggerFor]="langMenu">
+                <mat-icon style="margin-right: 8px;">language</mat-icon>
+                {{ languageService.currentLang().toUpperCase() }}
+            </button>
+            <mat-menu #langMenu="matMenu">
+                <button mat-menu-item (click)="setLanguage('fi')">Suomi</button>
+                <button mat-menu-item (click)="setLanguage('en')">English</button>
+            </mat-menu>
+        </div>
+        <div id="mobile-menu" *ngIf="dataService.isLoggedIn">
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu">
+                <mat-icon>account_circle</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item routerLink="/admin" *ngIf="dataService.isAdmin">
+                    <span>{{ 'nav.admin' | translate }}</span>
+                </button>
+                <button mat-menu-item routerLink="/profile">
+                    <span>{{ 'nav.profile' | translate }}</span>
+                </button>
+                <button mat-menu-item href="/docs" target="_blank">
+                    <span>{{ 'nav.docs' | translate }}</span>
+                </button>
+                <button mat-menu-item (click)="dataService.logout()">
+                    <span>{{ 'nav.logout' | translate }}</span>
+                </button>
+            </mat-menu>
+        </div>
+    </div>
+</div>
+<mat-progress-bar *ngIf="loading$ | async" mode="indeterminate"></mat-progress-bar>

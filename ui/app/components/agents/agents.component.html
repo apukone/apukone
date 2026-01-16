@@ -1,0 +1,59 @@
+<div id="page-container">
+    <div id="page-header">
+        <h2>{{ 'agents.title' | translate }}</h2>
+        <p>{{ 'agents.subtitle' | translate }}</p>
+    </div>
+
+    <div class="actions-bar">
+        <button mat-flat-button color="primary" [disabled]="loadingService.loading$ | async" (click)="createAgent()">
+            {{ 'agents.create_new' | translate }}
+        </button>
+    </div>
+
+    <table mat-table [dataSource]="dataSource" matSort id="data-table">
+        <!-- Name Column -->
+        <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef> {{ 'agents.col.title' | translate }} </th>
+            <td mat-cell *matCellDef="let element">
+                <span style="font-weight: 500;">{{element.title}}</span>
+            </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> {{ 'agents.col.status' | translate }} </th>
+            <td mat-cell *matCellDef="let element">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="status-indicator" [class.online]="element.isConnected"></span>
+                    <span style="font-size: 0.85rem; color: var(--text-muted)">{{ element.isConnected ? ('agents.online'
+                        | translate) : ('agents.offline' | translate) }}</span>
+                </div>
+            </td>
+        </ng-container>
+
+        <!-- Id Column -->
+        <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef> {{ 'agents.col.id' | translate }} </th>
+            <td mat-cell *matCellDef="let element">
+                <code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px;">{{element.id}}</code>
+            </td>
+        </ng-container>
+
+        <ng-container matColumnDef="manage">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'agents.col.options' | translate }}</th>
+            <td mat-cell *matCellDef="let element">
+                <button mat-stroked-button *ngIf="element.isOwner" (click)="manageAgent(element.id)">{{ 'agents.manage'
+                    | translate }}</button>
+                <button *ngIf="!element.isOwner" mat-button color="warn" (click)="removeAccess(element.id)">{{
+                    'agents.delete' | translate }}</button>
+            </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell" colspan="4" style="text-align: center; padding: 2rem;">{{ 'nav.no_agents' | translate
+                }}</td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,115 @@
+/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+// Custom Properties from Apukone Landing Page
+:root {
+    --primary-color: #6366f1;
+    /* Indigo */
+    --primary-hover: #4f46e5;
+    --background-dark: #0f172a;
+    /* Slate 900 */
+    --background-card: #1e293b;
+    /* Slate 800 */
+    --background-card-hover: #334155;
+    --text-main: #f8fafc;
+    /* Slate 50 */
+    --text-muted: #94a3b8;
+    /* Slate 400 */
+    --accent-glow: rgba(99, 102, 241, 0.5);
+    --font-family: 'Outfit', sans-serif;
+    --transition-speed: 0.3s;
+
+    /* Material Overrides Variables */
+    --mat-sys-primary: var(--primary-color);
+    --mat-sys-on-primary: #ffffff;
+    --mat-sys-surface: var(--background-dark);
+    --mat-sys-on-surface: var(--text-main);
+}
+
+html {
+    color-scheme: dark;
+    /* Force dark mode */
+    @include mat.theme((color: mat.$blue-palette,
+            typography: "Outfit",
+            density: 0));
+}
+
+html,
+body {
+    height: 100%;
+    background-color: var(--background-dark);
+    color: var(--text-main);
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-family);
+}
+
+/* Global Typography Overrides */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+/* Material Component Overrides for "Glassmorphism" / Premium Look */
+
+/* Dialogs */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+    background-color: var(--background-card) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px !important;
+    color: var(--text-main) !important;
+}
+
+/* Inputs */
+.mat-mdc-form-field {
+    width: 100%;
+}
+
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 8px;
+}
+
+.mdc-line-ripple {
+    display: none !important;
+    /* Hide the underline ripple */
+}
+
+/* Buttons */
+.mat-mdc-raised-button.mat-primary {
+    background-color: var(--primary-color) !important;
+    border-radius: 50px !important;
+    box-shadow: 0 4px 14px 0 var(--accent-glow) !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.mat-drawer-inner-container {
+    overflow: hidden !important;
+}

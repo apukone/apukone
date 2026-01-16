@@ -1,0 +1,124 @@
+#page-container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
+}
+
+#page-header {
+    h2 {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        font-weight: 300;
+        color: var(--text-heading);
+    }
+
+    p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+}
+
+.card-like {
+    padding: 2rem;
+    background: var(--background-card);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    margin-bottom: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    // Make description and token full width by spanning columns
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+    @media (max-width: 600px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+mat-form-field {
+    width: 100%;
+}
+
+.share-form {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+
+    @media (max-width: 600px) {
+        flex-direction: column;
+
+        button {
+            width: 100%;
+        }
+    }
+}
+
+.shared-users {
+    margin-top: 2rem;
+
+    h4 {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 1rem;
+    }
+}
+
+.shared-user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.status-messages {
+    margin-top: 1rem;
+}
+
+.success-message {
+    color: var(--mat-sys-primary);
+}
+
+.error-message {
+    color: var(--mat-sys-error);
+}
+
+.loading-state,
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    text-align: center;
+    color: var(--text-muted);
+
+    .large-icon {
+        font-size: 48px;
+        height: 48px;
+        width: 48px;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+}

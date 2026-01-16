@@ -1,0 +1,35 @@
+<div id="new-message-container">
+    <div class="welcome-header">
+        <div *ngIf="dataService.selectedAgent | async as agent; else noAgent">
+            <h1>{{ agent.title }}</h1>
+            <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 1.1rem;">{{ agent.description }}</p>
+        </div>
+        <ng-template #noAgent>
+            <h1>{{ 'new_chat.select_agent_title' | translate }}</h1>
+            <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 1.1rem;">{{ 'new_chat.select_agent_desc'
+                | translate }}</p>
+        </ng-template>
+    </div>
+
+    <div class="input-area">
+        <form [formGroup]="form">
+            <mat-form-field appearance="outline" class="big-input">
+                <mat-label>{{ 'new_chat.message_placeholder' | translate }}</mat-label>
+                <textarea matInput placeholder="{{ 'new_chat.message_placeholder' | translate }}"
+                    formControlName="message" (keydown.enter)="createChat()" rows="1" cdkTextareaAutosize
+                    cdkAutosizeMinRows="1" cdkAutosizeMaxRows="5" style="resize: none; overflow:hidden;">
+                </textarea>
+                <button mat-icon-button matSuffix (click)="createChat()"
+                    [disabled]="form.invalid || form.disabled || !(dataService.selectedAgent | async)">
+                    <mat-icon>send</mat-icon>
+                </button>
+            </mat-form-field>
+        </form>
+    </div>
+
+    <div class="disclaimer">
+        <p>
+            {{ 'new_chat.disclaimer' | translate }}
+        </p>
+    </div>
+</div>
