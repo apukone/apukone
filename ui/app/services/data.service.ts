@@ -194,6 +194,10 @@ export class DataService {
 
       // Listen for messages from the server
       // Listen for messages from the server
+      this.eventSource.addEventListener('ping', (event) => {
+        this.lastHeartbeat = Date.now();
+      });
+
       this.eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data); // Assuming the server sends JSON data
 
