@@ -18,6 +18,8 @@ export class DataService {
   private retryDelay = 1000; // Start with 1 second
   private maxRetryDelay = 30000; // Maximum 30 seconds
   private reconnectTimeout: any = null; // Store timeout reference
+  private lastHeartbeat: number = Date.now();
+  private heartbeatInterval: any = null;
   selectedAgent = new BehaviorSubject<Agent | null>(null);
   agents = new BehaviorSubject<Agent[] | null>(null);
 
@@ -188,12 +190,21 @@ export class DataService {
     // Create a new EventSource connection
     if (this.eventSource === null) {
       this.eventSource = new EventSource(`${this.apiUrl}/users/results?token=${localStorage.getItem('access_token')}`);
+      this.startHeartbeatMonitor();
 
+      // Listen for messages from the server
       // Listen for messages from the server
       this.eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data); // Assuming the server sends JSON data
 
         // Handle Agent Status Updates Globally
+        if (data === 'ping' || data.type === 'ping') {
+          this.lastHeartbeat = Date.now();
+          return;
+        }
+
+        this.lastHeartbeat = Date.now();
+
         if (data.type === 'agent_status') {
           const currentAgents = this.agents.value;
           if (currentAgents) {
@@ -244,11 +255,32 @@ export class DataService {
     this.retryDelay = 1000; // Reset delay after successful connection
   }
 
+  private startHeartbeatMonitor() {
+    this.stopHeartbeatMonitor();
+    this.lastHeartbeat = Date.now();
+    this.heartbeatInterval = setInterval(() => {
+      const now = Date.now();
+      if (now - this.lastHeartbeat > 35000) { // 35 seconds (buffer over 15s ping)
+        console.warn('Heartbeat timeout - reconnecting SSE');
+        this.disconnect();
+        this.connectToEvents();
+      }
+    }, 5000); // Check every 5 seconds
+  }
+
+  private stopHeartbeatMonitor() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+  }
+
   // Method to close the SSE connection
   public disconnect(): void {
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
+      this.stopHeartbeatMonitor();
     }
   }
 

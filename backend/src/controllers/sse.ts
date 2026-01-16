@@ -235,8 +235,14 @@ export const userSse = async (req: FastifyRequest<{ Querystring: { token: string
 
         req.raw.on('close', () => {
             clearInterval(interval);
-            console.log(`User disconnected: ${userId}`);
-            userConnections.delete(userId);
+            console.log(`User disconnected socket: ${userId}`);
+            // Only delete if this is the current connection in the map
+            // Use .raw underlying response object for strict equality check or just the FastifyReply wrapper if it's consistent
+            const currentConn = userConnections.get(userId);
+            if (currentConn === reply) {
+                console.log(`Removing user from active map: ${userId}`);
+                userConnections.delete(userId);
+            }
         });
 
         reply.hijack();
@@ -289,8 +295,8 @@ export const agentSse = async (req: FastifyRequest, reply: FastifyReply) => {
         }
 
         const interval = setInterval(() => {
-            reply.raw.write(': ping\n\n');
-        }, 30000);
+            reply.raw.write('event: ping\ndata: "ping"\n\n');
+        }, 15000);
 
         req.raw.on('close', async () => {
             clearInterval(interval);
