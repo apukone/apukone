@@ -1,24 +1,23 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
 hero:
-  name: "Apukone Docs"
-  text: "Distributed AI Inference"
-  tagline: Connect your agents to the world securely.
+  name: "Apukone"
+  text: "Hajautettu Tekoälyalusta"
+  tagline: Avoimen lähdekoodin ratkaisut tekoälyn hallintaan.
   actions:
     - theme: brand
-      text: Getting Started
-      link: /guide/getting-started
+      text: Aloitusopas
+      link: /asennus
     - theme: alt
-      text: API Reference
-      link: /api-examples
+      text: API Viitteet
+      link: /rajapinnat
 
 features:
-  - title: Secure Tunneling
-    details: End-to-end encrypted HTTP/2 tunnels for your local agents.
-  - title: Distributed Swarm
-    details: Orchestrate multiple local models as a unified intelligence grid.
-  - title: Simple Integration
-    details: Drop-in replacement for OpenAI SDKs.
+  - title: Turvallinen Tunnelointi
+    details: Päästä päähän salatut HTTP/2-tunnelit paikallisille agenteillesi.
+  - title: Hajautettu Parvi
+    details: Orkestroi useita paikallisia malleja yhtenäisenä älyverkkona.
+  - title: Avoin Lähdekoodi
+    details: Kaikki Apukoneen komponentit ovat avointa lähdekoodia ja vapaasti käytettävissä.
 ---

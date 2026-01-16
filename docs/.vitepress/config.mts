@@ -7,31 +7,68 @@ export default defineConfig({
     base: '/docs/',
     srcDir: '.',
     outDir: './.vitepress/dist',
-    themeConfig: {
-        // https://vitepress.dev/reference/default-theme-config
-        nav: [
-            { text: 'Home', link: '/' },
-            { text: 'Guide', link: '/guide/getting-started' },
-            { text: 'App', link: '../../../', target: '_self', rel: false } // Link back to main app
-        ],
 
-        sidebar: [
-            {
-                text: 'Introduction',
-                items: [
-                    { text: 'Getting Started', link: '/guide/getting-started' },
-                    { text: 'Architecture', link: '/guide/architecture' }
-                ]
-            },
-            {
-                text: 'Reference',
-                items: [
-                    { text: 'Client SDK', link: '/reference/client-sdk' },
-                    { text: 'API', link: '/reference/api' }
+    locales: {
+        root: {
+            label: 'Suomi',
+            lang: 'fi',
+            themeConfig: {
+                nav: [
+                    { text: 'Etusivu', link: '/' },
+                    { text: 'Opas', link: '/asennus' },
+                    { text: 'App', link: '../../../', target: '_self' }
+                ],
+                sidebar: [
+                    {
+                        text: 'Johdanto',
+                        items: [
+                            { text: 'Asennus', link: '/asennus' },
+                            { text: 'Käyttö', link: '/kaytto' },
+                            { text: 'Ominaisuudet', link: '/ominaisuudet' },
+                            { text: 'Järjestelmä', link: '/jarjestelma' }
+                        ]
+                    },
+                    {
+                        text: 'Viitteet',
+                        items: [
+                            { text: 'Rajapinnat (API)', link: '/rajapinnat' }
+                        ]
+                    }
                 ]
             }
-        ],
+        },
+        en: {
+            label: 'English',
+            lang: 'en',
+            link: '/en/',
+            themeConfig: {
+                nav: [
+                    { text: 'Home', link: '/en/' },
+                    { text: 'Guide', link: '/en/installation' },
+                    { text: 'App', link: '../../../', target: '_self' }
+                ],
+                sidebar: [
+                    {
+                        text: 'Introduction',
+                        items: [
+                            { text: 'Installation', link: '/en/installation' },
+                            { text: 'Usage', link: '/en/usage' },
+                            { text: 'Features', link: '/en/features' },
+                            { text: 'System', link: '/en/system' }
+                        ]
+                    },
+                    {
+                        text: 'Reference',
+                        items: [
+                            { text: 'API Reference', link: '/en/api' }
+                        ]
+                    }
+                ]
+            }
+        }
+    },
 
+    themeConfig: {
         socialLinks: [
             { icon: 'github', link: 'https://github.com/apukone/apukone' }
         ]

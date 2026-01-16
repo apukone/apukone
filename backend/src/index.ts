@@ -34,9 +34,17 @@ async function registerApp(server: FastifyInstance<any, any, any, any>) {
     server.register(sseRoutes, { prefix: '/api' });
 
     // Serve Static Files (Docs)
+    // Redirect /docs -> /docs/ to ensure relative paths work
+    server.get('/docs', (req, reply) => {
+        reply.redirect('/docs/');
+    });
+
     server.register(async (instance) => {
+        const docsPath = process.env.DOCS_PATH ? path.resolve(process.env.DOCS_PATH) : path.join(__dirname, '../docs/dist');
+        console.log(`[Docs] Serving docs from: ${docsPath} (DOCS_PATH: ${process.env.DOCS_PATH}, __dirname: ${__dirname})`);
+
         await instance.register(fastifyStatic, {
-            root: path.join(__dirname, '../docs/dist'),
+            root: docsPath,
             prefix: '/', // Mounted at /docs via plugin prefix
         });
     }, { prefix: '/docs' });

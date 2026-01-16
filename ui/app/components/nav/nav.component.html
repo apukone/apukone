@@ -74,9 +74,9 @@
                 <button mat-menu-item routerLink="/profile">
                     <span>{{ 'nav.profile' | translate }}</span>
                 </button>
-                <button mat-menu-item href="/docs" target="_blank">
+                <a mat-menu-item href="/docs/" target="_blank">
                     <span>{{ 'nav.docs' | translate }}</span>
-                </button>
+                </a>
                 <button mat-menu-item (click)="dataService.logout()">
                     <span>{{ 'nav.logout' | translate }}</span>
                 </button>
