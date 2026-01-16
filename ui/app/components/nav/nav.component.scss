@@ -90,3 +90,32 @@ button:hover mat-icon {
 .menu-btn mat-icon {
     color: var(--primary-color);
 }
+
+@media (max-width: 600px) {
+    #nav {
+        padding: 0.5rem 1rem;
+    }
+
+    .logo {
+        display: none;
+    }
+
+    #agent {
+        max-width: 15rem; // Adjust as needed
+        padding: 0 0.8rem;
+
+        div {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        span:nth-child(2) {
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px; // Leave space for status dot and arrow
+            vertical-align: middle;
+        }
+    }
+}

@@ -205,6 +205,12 @@ export class DataService {
             });
             this.agents.next(updatedAgents);
           }
+
+          // Also update selectedAgent if it matches
+          const currentSelected = this.selectedAgent.value;
+          if (currentSelected && currentSelected.id === data.agentId) {
+            this.selectedAgent.next({ ...currentSelected, isConnected: data.isConnected });
+          }
         }
 
         this.eventSourceSubject.next(data);
