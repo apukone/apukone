@@ -230,7 +230,9 @@ export const userSse = async (req: FastifyRequest<{ Querystring: { token: string
         });
 
         const interval = setInterval(() => {
-            reply.raw.write('event: ping\ndata: "ping"\n\n');
+            // Send random data to force flush
+            const randomPadding = Math.random().toString(36).substring(7);
+            reply.raw.write(`event: ping\ndata: "ping-${randomPadding}"\n\n`);
         }, 15000);
 
         req.raw.on('close', () => {
@@ -295,7 +297,9 @@ export const agentSse = async (req: FastifyRequest, reply: FastifyReply) => {
         }
 
         const interval = setInterval(() => {
-            reply.raw.write('event: ping\ndata: "ping"\n\n');
+            // Send random data to force flush
+            const randomPadding = Math.random().toString(36).substring(7);
+            reply.raw.write(`event: ping\ndata: "ping-${randomPadding}"\n\n`);
         }, 15000);
 
         req.raw.on('close', async () => {
