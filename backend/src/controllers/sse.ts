@@ -199,8 +199,9 @@ export const userSse = async (req: FastifyRequest<{ Querystring: { token: string
 
         // Headers
         reply.raw.setHeader('Content-Type', 'text/event-stream');
-        reply.raw.setHeader('Cache-Control', 'no-cache');
+        reply.raw.setHeader('Cache-Control', 'no-cache, no-transform');
         reply.raw.setHeader('Connection', 'keep-alive');
+        reply.raw.setHeader('Content-Encoding', 'none');
         reply.raw.setHeader('Access-Control-Allow-Origin', '*');
         reply.raw.setHeader('X-Accel-Buffering', 'no');
 
@@ -239,6 +240,7 @@ export const userSse = async (req: FastifyRequest<{ Querystring: { token: string
         });
 
         reply.hijack();
+        reply.raw.write(':' + ' '.repeat(2048) + '\n\n'); // 2KB padding for Cloudflare
         reply.raw.write(': connected\n\n');
 
     } catch (err) {
@@ -266,7 +268,8 @@ export const agentSse = async (req: FastifyRequest, reply: FastifyReply) => {
         }
 
         reply.raw.setHeader('Content-Type', 'text/event-stream');
-        reply.raw.setHeader('Cache-Control', 'no-cache');
+        reply.raw.setHeader('Cache-Control', 'no-cache, no-transform');
+        reply.raw.setHeader('Content-Encoding', 'none');
         reply.raw.setHeader('Access-Control-Allow-Origin', '*');
         reply.raw.setHeader('X-Accel-Buffering', 'no');
 
@@ -308,6 +311,7 @@ export const agentSse = async (req: FastifyRequest, reply: FastifyReply) => {
         });
 
         reply.hijack();
+        reply.raw.write(':' + ' '.repeat(2048) + '\n\n'); // 2KB padding for Cloudflare
         reply.raw.write(': connected\n\n');
 
         // Process any backlog (Sequential per chat)
