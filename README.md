@@ -17,9 +17,9 @@ Apukone on jaettu kolmeen eri osaan:
 
 ## Käyttöönotto tuotannossa
 
-1. **Pääjärjestelmän asennus**
+### 1. **Pääjärjestelmän asennus**
 
-### Kloonataan pääjärjestelmän repository:
+#### Kloonataan pääjärjestelmän repository:
 
 ```bash
 git clone https://github.com/apukone/apukone.git
@@ -30,7 +30,7 @@ Kloonaa pääjärjestelmän repository ja siirry pääjärjestelmän kansion:
 cd apukone
 ```
 
-### Asetetaan ympäristömuuttujat:
+#### Asetetaan ympäristömuuttujat:
 
 ```bash
 cp .env.example .env
@@ -38,20 +38,20 @@ nano .env
 ```
 Muuta tokenit, tietokantamuuttujat ja domain osoitteet tarpeen mukaan.
 
-### Rakennetaan kontainerit:
+#### Rakennetaan kontainerit:
 
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
 Järjestelmä pyöri nyt Docker konteinerissa. Selaimen kautta pääsee ohjelmistoon portista 8080.
 
-2. **Käytön aloitus selaimen kautta**
+### 2. **Käytön aloitus selaimen kautta**
 
-### Kirjautuminen
+#### Kirjautuminen
 
 Ensimmäisen asennuksen yhteydessä luodaan admin käyttäjä. Kirjaudu sisään käyttäjänä admin ja salasanana admin. Muistathan vaihtaa salasanan.
 
-### Agenttienhallinta
+#### Agenttienhallinta
 
 Yläpalkin kautta "Valitse agentti" -alasvetovalikosta voidaan valita haluamasi agentti. Samasta alasvetovalikosta voidaan myös valita "Lisää agentti" tai "Hallitse agentteja".
 
@@ -59,7 +59,7 @@ Ennen kuin ensimmäinen agentti voidaan asentaa omalle palvelimelle täytyy se e
 
 Agentin luonnin yhteydessä sille generoidaan `token`-muuttuja, joka tarvitaan agentin asennuksessa. Tämän tokenin avulla agentti kommunikoi pääjärjestelmän kanssa.
 
-3. **Agentin asennus**
+### 3. **Agentin asennus**
 
 Luotuasi ensimmäisen agentin pääjärjestelmään, voidaan se asentaa omalle palvelimelle tai työasemalle.
 
@@ -70,7 +70,7 @@ Agentin luomiseen on kaksi vaihtoehtoa:
 
 Kun agentti on luotu, voidaan se asentaa omalle palvelimelle tai työasemalle.
 
-4. **Agentin käyttöönotto**
+### 4. **Agentin käyttöönotto**
 
 Kun agentti on luotu ja se on yhdistetty pääjärjestelmään, voidaan sen kanssa keskustella pääjärjestelmän käyttöliittymän kautta.
 
