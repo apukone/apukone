@@ -64,7 +64,8 @@ async function registerApp(server: FastifyInstance<any, any, any, any>) {
 
 // HTTP/1.1 Server (for Browser UI)
 const server = Fastify({
-    logger: true
+    logger: true,
+    connectionTimeout: 120000, // 120 seconds
 });
 
 // HTTP/2 Server (for Agent)

@@ -230,7 +230,7 @@ export const userSse = async (req: FastifyRequest<{ Querystring: { token: string
         });
 
         const interval = setInterval(() => {
-            reply.raw.write(': ping\n\n');
+            reply.raw.write('event: ping\ndata: "ping"\n\n');
         }, 15000);
 
         req.raw.on('close', () => {
