@@ -5,9 +5,9 @@ import { triggerNextMessage, broadcastMessageStatus } from './sse';
 
 const prisma = new PrismaClient();
 
-export const finalizeMessage = async (req: FastifyRequest<{ Body: { message: any; chat_id: string; agent_id: string } }>, reply: FastifyReply) => {
+export const finalizeMessage = async (req: FastifyRequest<{ Body: { message: any; chat_id: string; agent_id: string; stats?: { inferenceTime?: number; tokens?: number } } }>, reply: FastifyReply) => {
     // Agent Authentication is handled by hook in routes
-    const { message, chat_id, agent_id } = req.body;
+    const { message, chat_id, agent_id, stats } = req.body;
 
     if (!message || !chat_id || !agent_id) {
         return reply.status(400).send({ error: 'Missing properties' });
@@ -49,7 +49,9 @@ export const finalizeMessage = async (req: FastifyRequest<{ Body: { message: any
                     chatId: chat_id,
                     agentId: agent_id,
                     content: JSON.stringify(message), // agent sends JSON object usually?
-                    status: 'finished'
+                    status: 'finished',
+                    inferenceTime: stats?.inferenceTime,
+                    tokens: stats?.tokens
                 }
             });
 

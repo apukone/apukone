@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslatePipe } from '../../pipes/translate.pipe';
+import { MatTabsModule } from '@angular/material/tabs';
 
 @Component({
   selector: 'agent-manage.component',
@@ -25,7 +26,8 @@ import { TranslatePipe } from '../../pipes/translate.pipe';
     MatIconModule,
     RouterLink,
     MatProgressSpinnerModule,
-    TranslatePipe
+    TranslatePipe,
+    MatTabsModule
   ]
 })
 export class AgentManageComponent implements OnInit {
@@ -37,6 +39,7 @@ export class AgentManageComponent implements OnInit {
   error: string = '';
   agent: Agent | null = null;
   agentId: string | null = null;
+  stats: any = null;
 
   constructor(
     public dataService: DataService,
@@ -80,9 +83,31 @@ export class AgentManageComponent implements OnInit {
       if (this.agent.isOwner) {
         this.loadSharedUsers();
       }
+      this.loadStats();
     } else {
       this.error = 'Agent not found';
     }
+  }
+
+  async loadStats() {
+    if (!this.agent) return;
+    const res: any = await this.dataService.getAgentStats(this.agent.id);
+    if (!res.error) {
+      this.stats = res;
+    }
+  }
+
+  formatDuration(ms: number): string {
+    if (!ms) return '0s';
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ${hours % 24}h`;
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
+    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+    return `${seconds}s`;
   }
 
   async loadSharedUsers() {

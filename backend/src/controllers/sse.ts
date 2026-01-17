@@ -296,6 +296,11 @@ export const agentSse = async (req: FastifyRequest, reply: FastifyReply) => {
             await broadcastAgentStatus(agentId, true);
         }
 
+        // Create session
+        const session = await prisma.agentSession.create({
+            data: { agentId }
+        });
+
         const interval = setInterval(() => {
             // Send random data to force flush
             const randomPadding = Math.random().toString(36).substring(7);
@@ -304,6 +309,17 @@ export const agentSse = async (req: FastifyRequest, reply: FastifyReply) => {
 
         req.raw.on('close', async () => {
             clearInterval(interval);
+
+            // Update session
+            try {
+                await prisma.agentSession.update({
+                    where: { id: session.id },
+                    data: { disconnectedAt: new Date() }
+                });
+            } catch (e) {
+                console.error(`Error updating session ${session.id}:`, e);
+            }
+
             const currentConns = agentConnections.get(agentId);
             if (currentConns) {
                 const index = currentConns.indexOf(reply);

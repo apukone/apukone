@@ -122,3 +122,38 @@ mat-form-field {
         opacity: 0.5;
     }
 }
+
+.manage-tabs {
+    margin-top: 2rem;
+}
+
+.tab-content {
+    padding-top: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background: var(--mat-sys-surface-container-low, rgba(255,255,255,0.05));
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--color-primary);
+    }
+}

@@ -61,6 +61,14 @@ export class DataService {
     }
   }
 
+  async getAgentStats(agentId: string) {
+    try {
+      return await firstValueFrom(this.http.get(`${this.apiUrl}/${agentId}/statistics`));
+    } catch (err: any) {
+      return this.handleError(err);
+    }
+  }
+
   async getAllUsers() {
     try {
       return await firstValueFrom(this.http.get(this.apiUrl + '/users'));

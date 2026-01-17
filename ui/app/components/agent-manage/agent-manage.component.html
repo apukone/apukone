@@ -12,87 +12,127 @@
         </div>
     </div>
 
-    <form [formGroup]="form">
-        <div class="form-grid">
-            <mat-form-field appearance="outline">
-                <mat-label>ID</mat-label>
-                <input matInput placeholder="id" id="id" formControlName="id" readonly>
-                <mat-icon matSuffix (click)="dataService.copyToClipboard(agent.id)" style="cursor: pointer;"
-                    title="Copy ID">content_copy</mat-icon>
-            </mat-form-field>
+    <mat-tab-group animationDuration="0ms" class="manage-tabs">
+        <mat-tab label="General">
+            <div class="tab-content">
+                <form [formGroup]="form">
+                    <div class="form-grid">
+                        <mat-form-field appearance="outline">
+                            <mat-label>ID</mat-label>
+                            <input matInput placeholder="id" id="id" formControlName="id" readonly>
+                            <mat-icon matSuffix (click)="dataService.copyToClipboard(agent.id)" style="cursor: pointer;"
+                                title="Copy ID">content_copy</mat-icon>
+                        </mat-form-field>
 
-            <mat-form-field appearance="outline">
-                <mat-label>Title</mat-label>
-                <input matInput placeholder="Title" id="title" formControlName="title" readonly>
-            </mat-form-field>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Title</mat-label>
+                            <input matInput placeholder="Title" id="title" formControlName="title" readonly>
+                        </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Description</mat-label>
-                <textarea matInput placeholder="Description" formControlName="description" readonly></textarea>
-            </mat-form-field>
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Description</mat-label>
+                            <textarea matInput placeholder="Description" formControlName="description"
+                                readonly></textarea>
+                        </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Token</mat-label>
-                <textarea style="height:100px; font-family: monospace;" matInput placeholder="Token"
-                    formControlName="token" readonly></textarea>
-                <mat-icon matSuffix (click)="dataService.copyToClipboard(agent.token)" style="cursor: pointer;"
-                    title="Copy Token">content_copy</mat-icon>
-            </mat-form-field>
-        </div>
-    </form>
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Token</mat-label>
+                            <textarea style="height:100px; font-family: monospace;" matInput placeholder="Token"
+                                formControlName="token" readonly></textarea>
+                            <mat-icon matSuffix (click)="dataService.copyToClipboard(agent.token)"
+                                style="cursor: pointer;" title="Copy Token">content_copy</mat-icon>
+                        </mat-form-field>
+                    </div>
+                </form>
 
-    <div class="share-section card-like" *ngIf="agent.isOwner">
-        <h3 style="margin-top: 0;">{{ 'agent_manage.share_title' | translate }}</h3>
-        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">{{ 'agent_manage.share_desc' | translate }}</p>
-
-        <form [formGroup]="shareForm" (ngSubmit)="share()" class="share-form">
-            <mat-form-field appearance="outline" style="flex-grow: 1;">
-                <mat-label>{{ 'agent_manage.username_placeholder' | translate }}</mat-label>
-                <input matInput formControlName="username"
-                    placeholder="{{ 'agent_manage.username_placeholder' | translate }}">
-            </mat-form-field>
-            <button mat-flat-button color="primary" type="submit" style="height: 56px;"
-                [disabled]="shareForm.invalid || (loadingService.loading$ | async)">
-                {{ 'agent_manage.share_btn' | translate }}
-            </button>
-        </form>
-
-        <div class="status-messages">
-            <p *ngIf="message" class="success-message">{{message}}</p>
-            <p *ngIf="error" class="error-message">{{error}}</p>
-        </div>
-
-        <div class="shared-users" *ngIf="sharedUsers.length > 0">
-            <h4>{{ 'agent_manage.shared_with' | translate }}</h4>
-            <div *ngFor="let user of sharedUsers" class="shared-user-item">
-                <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: 500;">{{user.username}}</span>
-                    <span style="font-size: 0.85rem; color: var(--text-muted);">{{user.email}}</span>
+                <div class="danger-zone card-like" *ngIf="agent.isOwner"
+                    style="border: 1px solid var(--mat-sys-error); margin-top: 2rem;">
+                    <h3 style="color: var(--mat-sys-error); margin-top: 0;">{{ 'agent_manage.danger_zone' | translate }}
+                    </h3>
+                    <p>This action cannot be undone.</p>
+                    <button style="background-color: var(--mat-sys-error); color: white;" mat-flat-button
+                        (click)="deleteAgent()" [disabled]="loadingService.loading$ | async">{{
+                        'agent_manage.delete_agent' | translate }}</button>
                 </div>
-                <button mat-icon-button color="warn" (click)="unshare(user.id)" title="Remove access">
-                    <mat-icon>remove_circle_outline</mat-icon>
-                </button>
             </div>
-        </div>
+        </mat-tab>
+
+        <mat-tab label="Access" *ngIf="agent.isOwner">
+            <div class="tab-content">
+                <div class="share-section card-like">
+                    <h3 style="margin-top: 0;">{{ 'agent_manage.share_title' | translate }}</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">{{ 'agent_manage.share_desc' | translate
+                        }}</p>
+
+                    <form [formGroup]="shareForm" (ngSubmit)="share()" class="share-form">
+                        <mat-form-field appearance="outline" style="flex-grow: 1;">
+                            <mat-label>{{ 'agent_manage.username_placeholder' | translate }}</mat-label>
+                            <input matInput formControlName="username"
+                                placeholder="{{ 'agent_manage.username_placeholder' | translate }}">
+                        </mat-form-field>
+                        <button mat-flat-button color="primary" type="submit" style="height: 56px;"
+                            [disabled]="shareForm.invalid || (loadingService.loading$ | async)">
+                            {{ 'agent_manage.share_btn' | translate }}
+                        </button>
+                    </form>
+
+                    <div class="status-messages">
+                        <p *ngIf="message" class="success-message">{{message}}</p>
+                        <p *ngIf="error" class="error-message">{{error}}</p>
+                    </div>
+
+                    <div class="shared-users" *ngIf="sharedUsers.length > 0">
+                        <h4>{{ 'agent_manage.shared_with' | translate }}</h4>
+                        <div *ngFor="let user of sharedUsers" class="shared-user-item">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 500;">{{user.username}}</span>
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">{{user.email}}</span>
+                            </div>
+                            <button mat-icon-button color="warn" (click)="unshare(user.id)" title="Remove access">
+                                <mat-icon>remove_circle_outline</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </mat-tab>
+
+        <mat-tab label="Statistics">
+            <div class="tab-content" *ngIf="stats">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Processed Messages</span>
+                        <span class="stat-value">{{stats.processed_messages}}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Avg Inference Time</span>
+                        <span class="stat-value">{{formatDuration(stats.avg_inference_time)}}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Total Connection Time</span>
+                        <span class="stat-value">{{formatDuration(stats.total_connection_time)}}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Total Tokens</span>
+                        <span class="stat-value">{{stats.total_tokens}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-content" *ngIf="!stats">
+                <mat-spinner diameter="30"></mat-spinner>
+                <p>Loading stats...</p>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+
+    <div *ngIf="!agent && !error" class="loading-state">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>{{ 'common.loading' | translate }}</p>
     </div>
 
-    <div class="danger-zone card-like" *ngIf="agent.isOwner"
-        style="border: 1px solid var(--mat-sys-error); margin-top: 2rem;">
-        <h3 style="color: var(--mat-sys-error); margin-top: 0;">{{ 'agent_manage.danger_zone' | translate }}</h3>
-        <p>This action cannot be undone.</p>
-        <button style="background-color: var(--mat-sys-error); color: white;" mat-flat-button (click)="deleteAgent()"
-            [disabled]="loadingService.loading$ | async">{{ 'agent_manage.delete_agent' | translate }}</button>
+    <div *ngIf="error && !agent" class="error-state">
+        <mat-icon class="large-icon">error_outline</mat-icon>
+        <h3>{{ 'agent_manage.agent_not_found' | translate }}</h3>
+        <p>{{ 'agent_manage.agent_not_found_desc' | translate }}</p>
+        <button mat-stroked-button routerLink="/agents">{{ 'agent_manage.back' | translate }}</button>
     </div>
-</div>
-
-<div *ngIf="!agent && !error" class="loading-state">
-    <mat-spinner diameter="40"></mat-spinner>
-    <p>{{ 'common.loading' | translate }}</p>
-</div>
-
-<div *ngIf="error && !agent" class="error-state">
-    <mat-icon class="large-icon">error_outline</mat-icon>
-    <h3>{{ 'agent_manage.agent_not_found' | translate }}</h3>
-    <p>{{ 'agent_manage.agent_not_found_desc' | translate }}</p>
-    <button mat-stroked-button routerLink="/agents">{{ 'agent_manage.back' | translate }}</button>
-</div>
