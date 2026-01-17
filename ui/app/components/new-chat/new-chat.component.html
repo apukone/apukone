@@ -17,10 +17,10 @@
                 <mat-label>{{ 'new_chat.message_placeholder' | translate }}</mat-label>
                 <textarea matInput placeholder="{{ 'new_chat.message_placeholder' | translate }}"
                     formControlName="message" (keydown.enter)="createChat()" rows="1" cdkTextareaAutosize
-                    cdkAutosizeMinRows="1" cdkAutosizeMaxRows="5" style="resize: none; overflow:hidden;">
-                </textarea>
+                    cdkAutosizeMinRows="1" cdkAutosizeMaxRows="5" style="resize: none; overflow:hidden;"
+                    [disabled]="!(dataService.selectedAgent | async)"></textarea>
                 <button mat-icon-button matSuffix (click)="createChat()"
-                    [disabled]="form.invalid || form.disabled || !(dataService.selectedAgent | async)">
+                    [disabled]="form.invalid || form.disabled || !(dataService.selectedAgent | async)" color="primary">
                     <mat-icon>send</mat-icon>
                 </button>
             </mat-form-field>

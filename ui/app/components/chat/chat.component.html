@@ -18,7 +18,8 @@
         <form (ngSubmit)="send()" [formGroup]="form">
             <mat-form-field appearance="outline">
                 <textarea matInput placeholder="{{ 'new_chat.message_placeholder' | translate }}"
-                    formControlName="message" (keydown.enter)="send($event)" rows="1"></textarea>
+                    formControlName="message" (keydown.enter)="send($event)" rows="1"
+                    [disabled]="!(dataService.selectedAgent | async)"></textarea>
             </mat-form-field>
             <button mat-icon-button type="submit"
                 [disabled]="form.invalid || form.disabled || form.get('message')?.value.length == 0 || !(dataService.selectedAgent | async)">

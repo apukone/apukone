@@ -8,7 +8,8 @@
             <button mat-icon-button (click)="sendEvent()" class="menu-btn">
                 <mat-icon>apps</mat-icon>
             </button>
-            <button mat-button id="agent" [matMenuTriggerFor]="agentMenu">
+            <button mat-button id="agent" [matMenuTriggerFor]="agentMenu"
+                [class.glow-effect]="!(dataService.selectedAgent | async)">
                 <div style="display: flex; align-items: center;">
                     <span class="status-indicator" *ngIf="dataService.selectedAgent | async"
                         [class.online]="(dataService.selectedAgent | async)?.isConnected"></span>

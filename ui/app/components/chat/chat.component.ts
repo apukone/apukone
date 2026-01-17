@@ -46,6 +46,14 @@ export class ChatComponent {
     }
 
     async ngOnInit() {
+        this.dataService.selectedAgent.subscribe(agent => {
+            if (agent) {
+                this.form.enable();
+            } else {
+                this.form.disable();
+            }
+        });
+
         this.route.params.subscribe(params => {
             this.chatId = params["id"];
             this.getMessages(this.chatId);

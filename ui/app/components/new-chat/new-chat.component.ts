@@ -34,6 +34,13 @@ export class NewChatComponent {
     }
 
     async ngOnInit() {
+        this.dataService.selectedAgent.subscribe(agent => {
+            if (agent) {
+                this.form.enable();
+            } else {
+                this.form.disable();
+            }
+        });
     }
 
     async createChat() {
