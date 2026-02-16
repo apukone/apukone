@@ -1,0 +1,76 @@
+{
+  "issuer": "http://apukone-authentik-server:9000/application/o/openwebui/",
+  "authorization_endpoint": "https://sso.{{BASE_DOMAIN}}/application/o/authorize/",
+  "token_endpoint": "http://apukone-authentik-server:9000/application/o/token/",
+  "userinfo_endpoint": "http://apukone-authentik-server:9000/application/o/userinfo/",
+  "end_session_endpoint": "https://sso.{{BASE_DOMAIN}}/application/o/openwebui/end-session/",
+  "introspection_endpoint": "http://apukone-authentik-server:9000/application/o/introspect/",
+  "revocation_endpoint": "http://apukone-authentik-server:9000/application/o/revoke/",
+  "device_authorization_endpoint": "https://sso.{{BASE_DOMAIN}}/application/o/device/",
+  "backchannel_logout_supported": true,
+  "backchannel_logout_session_supported": true,
+  "response_types_supported": [
+    "code",
+    "id_token",
+    "id_token token",
+    "code token",
+    "code id_token",
+    "code id_token token"
+  ],
+  "response_modes_supported": [
+    "query",
+    "fragment",
+    "form_post"
+  ],
+  "jwks_uri": "http://apukone-authentik-server:9000/application/o/openwebui/jwks/",
+  "grant_types_supported": [
+    "authorization_code",
+    "refresh_token",
+    "implicit",
+    "client_credentials",
+    "password",
+    "urn:ietf:params:oauth:grant-type:device_code"
+  ],
+  "id_token_signing_alg_values_supported": [
+    "RS256"
+  ],
+  "subject_types_supported": [
+    "public"
+  ],
+  "token_endpoint_auth_methods_supported": [
+    "client_secret_post",
+    "client_secret_basic"
+  ],
+  "acr_values_supported": [
+    "goauthentik.io/providers/oauth2/default"
+  ],
+  "scopes_supported": [
+    "openid",
+    "email",
+    "profile"
+  ],
+  "request_parameter_supported": false,
+  "claims_supported": [
+    "sub",
+    "iss",
+    "aud",
+    "exp",
+    "iat",
+    "auth_time",
+    "acr",
+    "amr",
+    "nonce",
+    "email",
+    "email_verified",
+    "name",
+    "given_name",
+    "preferred_username",
+    "nickname",
+    "groups"
+  ],
+  "claims_parameter_supported": false,
+  "code_challenge_methods_supported": [
+    "plain",
+    "S256"
+  ]
+}

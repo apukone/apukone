@@ -1,0 +1,34 @@
+# LiteLLM Configuration
+# Model definitions and gateway settings
+
+general_settings:
+  proxy_batch_write_at: 60
+
+router_settings:
+  redis_host: os.environ/REDIS_HOST
+  redis_port: os.environ/REDIS_PORT
+  enable_pre_call_check: true
+
+litellm_settings:
+  set_verbose: false
+  json_logs: true
+  log_raw_request_response: true
+  drop_params: true
+  num_retries: 3
+  request_timeout: 600
+  telemetry: false
+  cache: true
+  cache_params:
+    type: redis
+    host: os.environ/REDIS_HOST
+    port: os.environ/REDIS_PORT
+    namespace: "litellm_cache"
+    ttl: 600
+  success_callback:
+    - "prometheus"
+  failure_callback:
+    - "prometheus"
+  service_callback: ["prometheus_system"]
+
+# No pre-configured models - configuration should be managed via LiteLLM UI/API
+model_list: []

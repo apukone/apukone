@@ -1,0 +1,11 @@
+# Apukone - Main Docker Compose
+# This is the orchestration file that includes all services
+
+name: apukone
+
+include:
+  - services/traefik/docker-compose.yml
+  - services/authentik/docker-compose.yml
+  - services/openwebui/docker-compose.yml
+  - services/litellm/docker-compose.yml
+  - services/windmill/docker-compose.yml

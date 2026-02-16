@@ -1,0 +1,92 @@
+# OpenWebUI - AI Chat Interface
+# Command center for AI interactions with OIDC authentication
+
+services:
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: apukone-openwebui
+    restart: unless-stopped
+    environment:
+      ENABLE_PERSISTENT_CONFIG: "false"
+      # OIDC Configuration (Authentik)
+      ENABLE_OAUTH_SIGNUP: "true"
+      WEBUI_AUTH: "true"
+      ENABLE_OIDC_AUTH: "true"
+      ENABLE_SIGNUP: "true"
+      ENABLE_LOGIN_FORM: "false"
+      OAUTH_PROVIDER_NAME: "Authentik"
+      OAUTH_CLIENT_ID: ${OPENWEBUI_OIDC_CLIENT_ID}
+      OAUTH_CLIENT_SECRET: ${OPENWEBUI_OIDC_CLIENT_SECRET}
+      OAUTH_SCOPES: "openid email profile groups"
+      OAUTH_ROLES_CLAIM: "groups"
+      OAUTH_ADMIN_ROLES: "Admins"
+      OAUTH_MERGE_ACCOUNTS_BY_EMAIL: "true"
+      OPENID_REDIRECT_URI: https://chat.${BASE_DOMAIN}/oauth/oidc/callback
+      WEBUI_LOG_LEVEL: "DEBUG"
+      # SSL bypass for self-signed certificates
+      REQUESTS_CA_BUNDLE: ""
+      CURL_CA_BUNDLE: ""
+      PYTHONHTTPSVERIFY: "0"
+      OAUTHLIB_INSECURE_TRANSPORT: "1"
+      # Use internal config server for OIDC discovery to ensure correct hybrid URLs
+      OPENID_PROVIDER_URL: http://config-server/openid-configuration.json
+      DEFAULT_USER_ROLE: "user"
+      # OAUTH_AUTHORIZATION_URL, OAUTH_TOKEN_URL, OAUTH_USERINFO_URL are auto-discovered via OPENID_PROVIDER_URL
+      WEBUI_SECRET_KEY: "${WEBUI_SECRET_KEY}"
+      PYTHONUNBUFFERED: "1"
+      WEBUI_URL: https://chat.${BASE_DOMAIN}
+      # LiteLLM as backend
+      OPENAI_API_BASE_URL: http://litellm:4000/v1
+      OPENAI_API_KEY: ${LITELLM_MASTER_KEY}
+      # General settings
+      ENV: prod
+      PORT: "8080"
+      SCARF_NO_ANALYTICS: "true"
+      DO_NOT_TRACK: "true"
+      ANONYMIZED_TELEMETRY: "false"
+    volumes:
+      - openwebui-data:/app/backend/data
+ 
+    networks:
+      - apukone
+    extra_hosts:
+      - "sso.${BASE_DOMAIN}:host-gateway"
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080"]
+      interval: 5s
+      timeout: 30s
+      retries: 10
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=apukone"
+      # HTTP router (redirect to HTTPS)
+      - "traefik.http.routers.openwebui-http.rule=Host(`chat.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.openwebui-http.entrypoints=http"
+      - "traefik.http.routers.openwebui-http.middlewares=openwebui-redirect@docker"
+      # HTTPS router
+      - "traefik.http.routers.openwebui.rule=Host(`chat.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.openwebui.entrypoints=https"
+      - "traefik.http.routers.openwebui.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.openwebui.middlewares=openwebui-gzip@docker"
+      - "traefik.http.services.openwebui.loadbalancer.server.port=8080"
+      # Define local middlewares to avoid cross-service resolution issues
+      - "traefik.http.middlewares.openwebui-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.openwebui-gzip.compress=true"
+
+  config-server:
+    image: nginx:alpine
+    container_name: apukone-config-server
+    restart: unless-stopped
+    volumes:
+      - ./config/oidc:/usr/share/nginx/html
+    networks:
+      - apukone
+    ports: [] # Internal only
+
+networks:
+  apukone:
+    name: apukone
+
+volumes:
+  openwebui-data:

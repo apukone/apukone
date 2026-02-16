@@ -1,0 +1,147 @@
+version: "3.7"
+
+services:
+  windmill_db:
+    image: postgres:16-alpine
+    container_name: apukone-windmill-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${WINDMILL_POSTGRES_PASSWORD}
+      POSTGRES_DB: windmill
+    volumes:
+      - windmill_db_data:/var/lib/postgresql/data
+    networks:
+      - windmill-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  windmill_server:
+    image: ghcr.io/windmill-labs/windmill:main
+    container_name: apukone-windmill-server
+    restart: unless-stopped
+    expose:
+      - 8000
+    environment:
+      - DATABASE_URL=postgres://postgres:${WINDMILL_POSTGRES_PASSWORD}@windmill_db/windmill?sslmode=disable
+      - MODE=server
+      - BASE_URL=https://windmill.${BASE_DOMAIN}
+      # OIDC setup vars for init script
+      - BASE_DOMAIN=${BASE_DOMAIN}
+      - WINDMILL_OIDC_CLIENT_ID=${WINDMILL_OIDC_CLIENT_ID}
+      - WINDMILL_OIDC_CLIENT_SECRET=${WINDMILL_OIDC_CLIENT_SECRET}
+    depends_on:
+      windmill_db:
+        condition: service_healthy
+    volumes:
+      - windmill_worker_logs:/tmp/windmill/logs
+      - ./init_sso.py:/tmp/init_sso.py:ro
+    # Init command to generate oauth.json before starting
+    entrypoint: /bin/sh
+    command: 
+      - -c
+      - |
+        python3 /tmp/init_sso.py
+        /usr/local/bin/windmill
+        
+    networks:
+      - apukone
+      - windmill-internal
+      
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=apukone"
+      # HTTP router (redirect to HTTPS)
+      - "traefik.http.routers.windmill-http.rule=Host(`windmill.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.windmill-http.entrypoints=http"
+      - "traefik.http.routers.windmill-http.middlewares=windmill-redirect@docker"
+      # HTTPS router
+      - "traefik.http.routers.windmill.rule=Host(`windmill.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.windmill.entrypoints=https"
+      - "traefik.http.routers.windmill.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.windmill.middlewares=windmill-gzip@docker"
+      - "traefik.http.services.windmill.loadbalancer.server.port=8000"
+      # Define local middlewares to avoid cross-service resolution issues
+      - "traefik.http.middlewares.windmill-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.windmill-gzip.compress=true"
+
+  windmill_init:
+    image: postgres:16-alpine
+    container_name: apukone-windmill-init
+    depends_on:
+      windmill_db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${WINDMILL_POSTGRES_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+    networks:
+      - windmill-internal
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        echo "Waiting for Windmill to initialize the database schema..."
+        sleep 15
+        
+        # Derive username from email (part before @, replacing dots/special chars with hyphens)
+        USERNAME=$(echo "$${ADMIN_EMAIL}" | cut -d@ -f1 | sed 's/[^a-zA-Z0-9_-]/-/g')
+        echo "Adding user $${USERNAME} ($${ADMIN_EMAIL}) to admins workspace..."
+        
+        psql -h windmill_db -U postgres -d windmill -v ON_ERROR_STOP=0 <<EOSQL
+        -- Add the OIDC admin user to the auto-created 'admins' workspace
+        INSERT INTO usr (workspace_id, username, email, is_admin, role, operator, disabled)
+        VALUES ('admins', '$${USERNAME}', '$${ADMIN_EMAIL}', true, 'Admin', false, false)
+        ON CONFLICT (workspace_id, username) DO UPDATE SET is_admin = true;
+        EOSQL
+        echo "Windmill workspace initialization complete."
+    restart: "no"
+
+  windmill_worker:
+    image: ghcr.io/windmill-labs/windmill:main
+    container_name: apukone-windmill-worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://postgres:${WINDMILL_POSTGRES_PASSWORD}@windmill_db/windmill?sslmode=disable
+      - MODE=worker
+      - WORKER_GROUP=default
+    depends_on:
+      windmill_db:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - windmill_worker_dependency_cache:/tmp/windmill/cache
+      - windmill_worker_logs:/tmp/windmill/logs
+    networks:
+      - apukone
+      - windmill-internal
+
+  windmill_worker_native:
+    image: ghcr.io/windmill-labs/windmill:main
+    container_name: apukone-windmill-worker-native
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://postgres:${WINDMILL_POSTGRES_PASSWORD}@windmill_db/windmill?sslmode=disable
+      - MODE=worker
+      - WORKER_GROUP=native
+      - NUM_WORKERS=8
+      - SLEEP_QUEUE=200
+    depends_on:
+      windmill_db:
+        condition: service_healthy
+    volumes:
+      - windmill_worker_logs:/tmp/windmill/logs
+    networks:
+      - windmill-internal
+
+networks:
+  apukone:
+    name: apukone
+  windmill-internal:
+    driver: bridge
+
+volumes:
+  windmill_db_data:
+  windmill_worker_dependency_cache:
+  windmill_worker_logs:

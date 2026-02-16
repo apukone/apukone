@@ -1,0 +1,146 @@
+# Authentik SSO / Identity Provider
+# Provides OIDC authentication for all services
+
+services:
+  authentik-server:
+    image: ghcr.io/goauthentik/server:2025.10.3
+    container_name: apukone-authentik-server
+    restart: unless-stopped
+    command: server
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      AUTHENTIK_LOG_LEVEL: debug
+      # Bootstrap admin user
+      AUTHENTIK_BOOTSTRAP_EMAIL: ${ADMIN_EMAIL}
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${ADMIN_PASSWORD}
+      # Required for domain_url resolution (fixes blueprint validation)
+      AUTHENTIK_URL: https://sso.${BASE_DOMAIN}
+      AUTHENTIK_BOOTSTRAP_TOKEN: ${AUTHENTIK_BOOTSTRAP_TOKEN}
+      # OIDC Configs for Blueprint
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      OPENWEBUI_OIDC_CLIENT_ID: ${OPENWEBUI_OIDC_CLIENT_ID}
+      OPENWEBUI_OIDC_CLIENT_SECRET: ${OPENWEBUI_OIDC_CLIENT_SECRET}
+      LITELLM_OIDC_CLIENT_ID: ${LITELLM_OIDC_CLIENT_ID}
+      LITELLM_OIDC_CLIENT_SECRET: ${LITELLM_OIDC_CLIENT_SECRET}
+      BASE_DOMAIN: ${BASE_DOMAIN}
+      # CSRF Fix for HTTPS behind proxy
+      AUTHENTIK_CSRF_TRUSTED_ORIGINS: https://sso.${BASE_DOMAIN}
+      # Address Redirect Loop behind Traefik (Trust internal networks for headers)
+      AUTHENTIK_PROXY_TRUSTED_IPS: 127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+    volumes:
+      - authentik-media:/media
+      - authentik-templates:/templates
+      # Mount the generated blueprint to server as well
+      - ./setup-blueprint.yaml:/blueprints/setup.yaml
+    networks:
+      - apukone
+      - authentik-internal
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "ak", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=apukone"
+      # HTTP router (redirect to HTTPS)
+      - "traefik.http.routers.authentik-http.rule=Host(`sso.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.authentik-http.entrypoints=http"
+      - "traefik.http.routers.authentik-http.middlewares=redirect-to-https"
+      # HTTPS router
+      - "traefik.http.routers.authentik.rule=Host(`sso.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.authentik.entrypoints=https"
+      - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.authentik.middlewares=gzip"
+      - "traefik.http.services.authentik.loadbalancer.server.port=9000"
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2025.10.3
+    container_name: apukone-authentik-worker
+    restart: unless-stopped
+    command: worker
+    user: root
+    environment:
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: authentik
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+      # Bootstrap admin user (required for worker too?)
+      AUTHENTIK_BOOTSTRAP_EMAIL: ${ADMIN_EMAIL}
+      AUTHENTIK_BOOTSTRAP_PASSWORD: ${ADMIN_PASSWORD}
+      # Required for domain_url resolution
+      AUTHENTIK_URL: https://sso.${BASE_DOMAIN}
+      AUTHENTIK_BOOTSTRAP_TOKEN: ${AUTHENTIK_BOOTSTRAP_TOKEN}
+      # OIDC Configs for Blueprint
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      OPENWEBUI_OIDC_CLIENT_ID: ${OPENWEBUI_OIDC_CLIENT_ID}
+      OPENWEBUI_OIDC_CLIENT_SECRET: ${OPENWEBUI_OIDC_CLIENT_SECRET}
+      LITELLM_OIDC_CLIENT_ID: ${LITELLM_OIDC_CLIENT_ID}
+      LITELLM_OIDC_CLIENT_SECRET: ${LITELLM_OIDC_CLIENT_SECRET}
+      WINDMILL_OIDC_CLIENT_ID: ${WINDMILL_OIDC_CLIENT_ID}
+      WINDMILL_OIDC_CLIENT_SECRET: ${WINDMILL_OIDC_CLIENT_SECRET}
+      BASE_DOMAIN: ${BASE_DOMAIN}
+      AUTHENTIK_CSRF_TRUSTED_ORIGINS: https://sso.${BASE_DOMAIN}
+      AUTHENTIK_PROXY_TRUSTED_IPS: 127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - authentik-media:/media
+      - authentik-certs:/certs
+      - authentik-templates:/templates
+      # Mount the generated blueprint
+      - ./setup-blueprint.yaml:/blueprints/setup.yaml
+    networks:
+      - apukone
+      - authentik-internal
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "ak", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+
+  authentik-db:
+    image: postgres:16-alpine
+    container_name: apukone-authentik-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD}
+      POSTGRES_USER: authentik
+      POSTGRES_DB: authentik
+    volumes:
+      - authentik-db:/var/lib/postgresql/data
+    networks:
+      - authentik-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d authentik -U authentik"]
+      interval: 5s
+      timeout: 10s
+      retries: 15
+
+networks:
+  apukone:
+    name: apukone
+  authentik-internal:
+    driver: bridge
+
+volumes:
+  authentik-db:
+  authentik-media:
+  authentik-certs:
+  authentik-templates:

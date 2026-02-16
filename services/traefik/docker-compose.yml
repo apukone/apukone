@@ -1,0 +1,74 @@
+# Traefik Reverse Proxy
+# Handles SSL termination, routing, and Let's Encrypt certificates
+
+services:
+  traefik:
+    image: traefik:v3.6
+    container_name: apukone-traefik
+    restart: unless-stopped
+    command:
+      # API and Dashboard
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      # Ping endpoint for healthcheck
+      - "--ping=true"
+      - "--ping.entrypoint=http"
+      # Entrypoints
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--entrypoints.http.http.encodequerysemicolons=true"
+      - "--entrypoints.https.http.encodequerysemicolons=true"
+      - "--entryPoints.http.http2.maxConcurrentStreams=250"
+      - "--entryPoints.https.http2.maxConcurrentStreams=250"
+      - "--entrypoints.https.http3"
+      # Providers
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=apukone"
+      - "--providers.file.directory=/traefik/dynamic/"
+      - "--providers.file.watch=true"
+      # Let's Encrypt
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/traefik/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3
+    networks:
+      apukone:
+        aliases:
+          - sso.${BASE_DOMAIN}
+          - chat.${BASE_DOMAIN}
+          - llm.${BASE_DOMAIN}
+          - windmill.${BASE_DOMAIN}
+          - trigger.${BASE_DOMAIN}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certs:/traefik
+      - ./dynamic:/traefik/dynamic:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/ping"]
+      interval: 4s
+      timeout: 2s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      # Dashboard (optional, protected by basic auth)
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.dashboard.entrypoints=https"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      # Global redirect HTTP -> HTTPS
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.gzip.compress=true"
+
+networks:
+  apukone:
+    name: apukone
+
+volumes:
+  traefik-certs:

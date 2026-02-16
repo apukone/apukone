@@ -1,0 +1,147 @@
+# LiteLLM - AI Model Gateway
+# Unified API for multiple AI providers with caching and rate limiting
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm-database:main-stable
+    container_name: apukone-litellm
+    restart: unless-stopped
+
+    environment:
+      # Database
+      DATABASE_URL: postgresql://litellm:${LITELLM_POSTGRES_PASSWORD}@litellm-db:5432/litellm
+      # Redis cache
+      REDIS_HOST: litellm-redis
+      REDIS_PORT: "6379"
+      # Credentials
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+      UI_USERNAME: admin
+      UI_PASSWORD: ${ADMIN_PASSWORD}
+      LITELLM_ADMIN_EMAILS: ${ADMIN_EMAIL},akadmin      # Settings
+      LITELLM_LOG: DEBUG
+      LITELLM_MODE: ${LITELLM_MODE:-PRODUCTION}
+      STORE_MODEL_IN_DB: "true"
+      # URLs
+      LITELLM_PROXY_BASE_URL: https://llm.${BASE_DOMAIN}
+      LITELLM_UI_BASE_URL: https://llm.${BASE_DOMAIN}
+      FORWARDED_ALLOW_IPS: "*"
+      # SSO Configuration (Authentik) - Internal HTTP for backend-to-backend
+      LITELLM_SSL_VERIFY: "false"
+      PYTHONHTTPSVERIFY: "0"
+      PROXY_BASE_URL: https://llm.${BASE_DOMAIN}
+      GENERIC_CLIENT_ID: ${LITELLM_OIDC_CLIENT_ID}
+      GENERIC_CLIENT_SECRET: ${LITELLM_OIDC_CLIENT_SECRET}
+      GENERIC_SCOPES: "openid email profile groups"
+      GENERIC_USER_ID_CLAIM: email
+      GENERIC_AUTHORIZATION_ENDPOINT: https://sso.${BASE_DOMAIN}/application/o/authorize/
+      GENERIC_TOKEN_ENDPOINT: http://apukone-authentik-server:9000/application/o/token/
+      GENERIC_USERINFO_ENDPOINT:  http://apukone-authentik-server:9000/application/o/userinfo/
+      GENERIC_JWKS_ENDPOINT: http://apukone-authentik-server:9000/application/o/litellm/jwks/
+      GENERIC_CALLBACK_URL: https://llm.${BASE_DOMAIN}/sso/callback
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./patch_ssl_v2.py:/app/patch_ssl_v2.py:ro
+    # entrypoint: []
+    # command: ["tail", "-f", "/dev/null"]
+    networks:
+      - apukone
+      - litellm-internal
+
+    depends_on:
+      litellm-db:
+        condition: service_healthy
+      litellm-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests as r;r.get('http://127.0.0.1:4000/health/liveliness').raise_for_status()"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=apukone"
+      # HTTP router (redirect to HTTPS)
+      - "traefik.http.routers.litellm-http.rule=Host(`llm.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.litellm-http.entrypoints=http"
+      - "traefik.http.routers.litellm-http.middlewares=litellm-redirect@docker"
+      # HTTPS router
+      - "traefik.http.routers.litellm.rule=Host(`llm.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.litellm.entrypoints=https"
+      - "traefik.http.routers.litellm.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.litellm.middlewares=litellm-gzip@docker"
+      - "traefik.http.services.litellm.loadbalancer.server.port=4000"
+      # Define local middlewares to avoid cross-service resolution issues
+      - "traefik.http.middlewares.litellm-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.litellm-gzip.compress=true"
+
+  litellm-init:
+    image: curlimages/curl
+    container_name: apukone-litellm-init
+    depends_on:
+      litellm:
+        condition: service_healthy
+    environment:
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+    networks:
+      - litellm-internal
+    entrypoint: /bin/sh
+    command: 
+      - -c
+      - |
+        until curl -s -f -o /dev/null "http://litellm:4000/health/liveliness"; do echo "Waiting for LiteLLM..."; sleep 2; done;
+        echo "LiteLLM is up. Resetting admin user to use email as ID...";
+        
+        # Delete akadmin if it exists
+        curl -X POST -H "Authorization: Bearer $${LITELLM_MASTER_KEY}" -H "Content-Type: application/json" -d "{\"user_ids\": [\"akadmin\"]}" http://litellm:4000/user/delete
+        
+        # Delete user with email as ID if it exists
+        curl -X POST -H "Authorization: Bearer $${LITELLM_MASTER_KEY}" -H "Content-Type: application/json" -d "{\"user_ids\": [\"$${ADMIN_EMAIL}\"]}" http://litellm:4000/user/delete
+        
+        echo "Creating new admin user with ID: $${ADMIN_EMAIL}"
+        curl -X POST -H "Authorization: Bearer $${LITELLM_MASTER_KEY}" -H "Content-Type: application/json" -d "{\"user_id\": \"$${ADMIN_EMAIL}\", \"user_role\": \"proxy_admin\", \"user_email\": \"$${ADMIN_EMAIL}\"}" http://litellm:4000/user/new
+
+  litellm-db:
+    image: postgres:16-alpine
+    container_name: apukone-litellm-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: litellm
+      POSTGRES_PASSWORD: ${LITELLM_POSTGRES_PASSWORD}
+      POSTGRES_DB: litellm
+    volumes:
+      - litellm-db:/var/lib/postgresql/data
+    networks:
+      - litellm-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U litellm -d litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  litellm-redis:
+    image: redis:7-alpine
+    container_name: apukone-litellm-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - litellm-redis:/data
+    networks:
+      - litellm-internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+networks:
+  apukone:
+    name: apukone
+  litellm-internal:
+    driver: bridge
+
+volumes:
+  litellm-db:
+  litellm-redis:
